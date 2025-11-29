@@ -5,11 +5,10 @@ import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 
 import {
-  submitReport,
-  updateDescription,
-  deleteReport,
-} from "../controllers/report.controller.js";
-
+  csrLogin,
+  getReleasedTenders,
+  acceptTenderRequest,
+} from "../controllers/csr.controller.js";
 const router = Router();
 
 router
