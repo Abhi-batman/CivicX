@@ -137,6 +137,8 @@ export const getCitizenList = asyncHandler(async (req, res) => {
 
   const total = totalAgg[0] ? totalAgg[0].totalUsers : 0;
 
+  if (!total) throw new ApiError(500, "Error");
+
   const result = rows.map((r) => ({
     userId: r.userId,
     name: r.fullname,
