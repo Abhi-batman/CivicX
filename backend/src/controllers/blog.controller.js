@@ -22,3 +22,5 @@ const getPendingReportsOlderThanMonth = asyncHandler(async (req, res) => {
     new ApiResponse(200, reports, "Pending reports older than one month fetched successfully")
   );
 });
+
+export const {getPendingReportsOlderThanMonth}
