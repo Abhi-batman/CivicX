@@ -1,19 +1,19 @@
-import { ApiError } from "../utils/apiError.js";
+import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { Report } from "../models/report.model.js";
-import fetch from "node-fetch";
+// import fetch from "node-fetch";
 
-async function reverseGeocode(lat, lng) {
-  const api = process.env.GOOGLE_API_KEY;
-  const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${api}`;
+// async function reverseGeocode(lat, lng) {
+//   const api = process.env.GOOGLE_API_KEY;
+//   const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${api}`;
 
-  const res = await fetch(url);
-  const data = await res.json();
+//   const res = await fetch(url);
+//   const data = await res.json();
 
-  return data?.results?.[0]?.formatted_address || null;
-}
+//   return data?.results?.[0]?.formatted_address || null;
+// }
 const submitReport = asyncHandler(async (req, res) => {
   const { description, department, category, latitude, longitude } = req.body;
 
@@ -125,7 +125,7 @@ const getAllReport = asyncHandler(async (req, res) => {
     sortType = "desc",
     userId,
     category,
-    status
+    status,
   } = req.query;
 
   page = parseInt(page);
@@ -135,20 +135,17 @@ const getAllReport = asyncHandler(async (req, res) => {
 
   const filter = {};
 
-  
   if (query) {
     filter.$or = [
       { title: { $regex: query, $options: "i" } },
-      { description: { $regex: query, $options: "i" } }
+      { description: { $regex: query, $options: "i" } },
     ];
   }
 
-  
   if (userId) {
     filter.reportedBy = userId;
   }
 
-  
   if (category) {
     filter.category = category;
   }
@@ -162,7 +159,6 @@ const getAllReport = asyncHandler(async (req, res) => {
 
   const totalReports = await Report.countDocuments(filter);
 
-  
   if (skip >= totalReports && totalReports > 0) {
     throw new ApiError(400, "No more reports");
   }
@@ -173,39 +169,36 @@ const getAllReport = asyncHandler(async (req, res) => {
     .skip(skip)
     .limit(limit);
 
-  return res
-    .status(200)
-    .json(
-      new ApiResponse(
-        200,
-        {
-          total: totalReports,
-          page,
-          limit,
-          reports
-        },
-        "Reports fetched successfully"
-      )
-    );
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        total: totalReports,
+        page,
+        limit,
+        reports,
+      },
+      "Reports fetched successfully"
+    )
+  );
 });
 
-const getReportbyId = asyncHandler(async(req,res) =>{
+const getReportbyId = asyncHandler(async (req, res) => {
+  const report = await Report.findById(req.params.id);
 
-    const report = await Report.findById(req.params.id)
+  if (!report) {
+    throw new ApiError(404, "Report not found");
+  }
 
-    if(!report){
-        throw new ApiError(404, "Report not found")
-    }
-
-    return res
+  return res
     .status(200)
-    .json(new ApiResponse(200, {report}, "Report fetched successfully"))
-})
+    .json(new ApiResponse(200, { report }, "Report fetched successfully"));
+});
 
-
-export {submitReport,
-        updateDescription,
-        deleteReport,
-        getAllReport,
-        getReportbyId
-}
+export {
+  submitReport,
+  updateDescription,
+  deleteReport,
+  getAllReport,
+  getReportbyId,
+};
