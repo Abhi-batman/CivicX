@@ -9,14 +9,14 @@ import {
   getReleasedTenders,
   acceptTenderRequest,
 } from "../controllers/csr.controller.js";
-const router = Router();
+const router = Router()
+router.post("/login", csrLogin);
 
-router
-  .route("/submitReport")
-  .post(verifyJWT, upload.single("image"), submitReport);
-router.route("/deleteReport/:id").delete(verifyJWT, deleteReport);
-router.route("/updateDescription/:id").patch(verifyJWT, updateDescription);
-router.route("/getReport/:id").get(verifyJWT, getReportbyId);
-router.route("/getAllReports").get(getAllReports);
+
+router.get("/tenders", verifyJWT, getReleasedTenders);
+
+
+router.post("/tenders/:tenderId/accept", verifyJWT, acceptTenderRequest);
+
 
 export default router;
