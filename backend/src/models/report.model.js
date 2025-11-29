@@ -1,7 +1,12 @@
 import mongoose, { Schema } from "mongoose";
 
 const reportSchema = new Schema(
-  {
+  { 
+    title:{
+     type: String,
+      required: true,
+      trim: true,     
+    },
     description: {
       type: String,
       required: true,
@@ -43,16 +48,16 @@ const reportSchema = new Schema(
       required: true,
     },
 
-    status: {
-      type: String,
-      required: true,
-      default: "pending",
-    },
+    // status: {
+    //   type: String,
+    //   required: true,
+    //   default: "pending",
+    // },
 
-    priority: {
-      type: String,
-      required: true,
-    },
+    // priority: {
+    //   type: String,
+    //   required: true,
+    // },
   },
 
   { timestamps: true }
