@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSR Dashboard</title>
+
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    body {
+        margin: 0;
+        font-family: 'Inter', sans-serif;
+        background: #f3f4f6;
+        color: #1f2937;
+        display: flex;
+    }
+
+    /* Sidebar */
+    .sidebar {
+        width: 240px;
+        background: #1e3a8a;
+        height: 100vh;
+        padding: 32px 20px;
+        border-right: 1px solid #1e40af;
+        box-sizing: border-box;
+    }
+    .sidebar h2 {
+        color: #ffffff;
+        font-size: 22px;
+        margin-bottom: 40px;
+        font-weight: 700;
+    }
+    .sidebar a {
+        text-decoration: none;
+        display: block;
+        padding: 10px 12px;
+        margin-bottom: 16px;
+        color: #e0e7ff;
+        font-size: 15px;
+        font-weight: 500;
+        border-radius: 6px;
+        transition: .2s;
+    }
+    .sidebar a:hover {
+        background: #374bb7;
+        color: #fff;
+    }
+
+    /* Main */
+    .main {
+        flex: 1;
+        padding: 35px;
+    }
+
+    h1 {
+        margin-bottom: 25px;
+        color: #1e3a8a;
+        font-size: 26px;
+        font-weight: 700;
+    }
+
+    /* Cards */
+    .cards {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    .card {
+        flex: 1;
+        background: #ffffff;
+        padding: 20px;
+        border-radius: 12px;
+        border: 1px solid #d1d5db;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    }
+    .card h3 {
+        margin: 0;
+        font-size: 16px;
+        color: #4b5563;
+    }
+    .card p {
+        margin-top: 10px;
+        font-size: 26px;
+        font-weight: 700;
+        color: #1e3a8a;
+    }
+
+    /* Search bar */
+    .search-container {
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: flex-end;
+    }
+    .search-container input {
+        padding: 10px;
+        width: 240px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+    }
+
+    /* Table */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background: #ffffff;
+        border-radius: 10px;
+        overflow: hidden;
+        border: 1px solid #d1d5db;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    th, td {
+        padding: 16px 18px;
+        border-bottom: 1px solid #e5e7eb;
+        font-size: 15px;
+    }
+    th {
+        background: #eef2ff;
+        color: #1e3a8a;
+        font-weight: 600;
+    }
+    tr:hover {
+        background: #f9fafb;
+    }
+
+    /* Buttons */
+    .btn {
+        padding: 8px 16px;
+        font-size: 14px;
+        font-weight: 600;
+        border-radius: 6px;
+        cursor: pointer;
+        border: none;
+        transition: 0.2s;
+    }
+    .apply-btn {
+        background: #1e3a8a;
+        color: white;
+    }
+    .apply-btn:hover {
+        background: #173b74;
+    }
+    .donate-btn {
+        background: #047857;
+        color: white;
+    }
+    .donate-btn:hover {
+        background: #036548;
+    }
+
+    /* QR Popup */
+    #qrModal {
+        display:none; 
+        position:fixed; 
+        top:0; left:0; right:0; bottom:0;
+        background:rgba(0,0,0,0.6);
+        justify-content:center; 
+        align-items:center;
+        backdrop-filter: blur(5px);
+    }
+    #qrBox {
+        background:white;
+        padding:25px;
+        border-radius:12px;
+        width:320px;
+        text-align:center;
+    }
+</style>
+
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+    <h2>CSR Panel</h2>
+    <a href="#">Dashboard</a>
+    <a href="#">My Issues</a>
+    <a href="#">Donations</a>
+    <a href="#">Profile</a>
+</div>
+
+<!-- Main -->
+<div class="main">
+
+    <h1>CSR Issue Board</h1>
+
+    <!-- Info Cards -->
+    <div class="cards">
+        <div class="card">
+            <h3>Total Issues</h3>
+            <p id="totalIssues">0</p>
+        </div>
+        <div class="card">
+            <h3>Applied</h3>
+            <p id="appliedCount">0</p>
+        </div>
+        <div class="card">
+            <h3>Donated</h3>
+            <p id="donatedCount">0</p>
+        </div>
+    </div>
+
+    <!-- Search -->
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Search issues..." onkeyup="searchTable()">
+    </div>
+
+    <!-- Issues Table -->
+    <table id="issuesTable">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Issue</th>
+                <th>Description</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+</div>
+
+<!-- QR Modal -->
+<div id="qrModal">
+    <div id="qrBox">
+        <h3 style="color:#1e3a8a;">Scan & Pay</h3>
+        <img src="your_gpay_qr.png" width="220">
+        <br><br>
+        <button onclick="closeQR()" 
+        style="padding:8px 16px; background:#1e3a8a; border:none; color:#fff; border-radius:8px;">
+            Close
+        </button>
+    </div>
+</div>
+
+<script>
+/* BACKEND API BASE URL */
+const API_BASE = "https://your-backend-url.com/api";
+
+/* Issue List */
+const issues = [
+    {id:1, title:"Clean Park", desc:"Need volunteers to clean park."},
+    {id:2, title:"Donate Books", desc:"Donate old books to school."},
+    {id:3, title:"Tree Plantation", desc:"Plant trees in designated areas."},
+    {id:4, title:"Food Drive", desc:"Collect and distribute food packets."}
+];
+
+const tbody = document.querySelector("#issuesTable tbody");
+let appliedCount = 0;
+let donatedCount = 0;
+
+/* Load Issues Table */
+function renderTable() {
+    tbody.innerHTML = "";
+    issues.forEach(issue => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${issue.id}</td>
+                <td>${issue.title}</td>
+                <td>${issue.desc}</td>
+                <td>
+                    <button class="btn apply-btn" onclick="applyIssue(${issue.id}, this)">Apply</button>
+                    <button class="btn donate-btn" onclick="donateIssue(${issue.id})">Donate</button>
+                </td>
+            </tr>
+        `;
+    });
+
+    document.getElementById("totalIssues").innerText = issues.length;
+}
+
+/* APPLY Function */
+async function applyIssue(id, btn){
+    btn.style.background = "#16a34a"; 
+    btn.innerText = "✓ Applied";
+
+    appliedCount++;
+    document.getElementById("appliedCount").innerText = appliedCount;
+
+    await fetch(`${API_BASE}/csr/apply`, {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({issue_id:id})
+    });
+
+    setTimeout(()=>{
+        btn.style.background = "#1e3a8a";
+        btn.innerText = "Apply";
+    }, 2000);
+}
+
+/* DONATE Function */
+async function donateIssue(id){
+    document.getElementById("qrModal").style.display = "flex";
+
+    donatedCount++;
+    document.getElementById("donatedCount").innerText = donatedCount;
+
+    await fetch(`${API_BASE}/csr/donate`, {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({issue_id:id})
+    });
+}
+
+/* Close QR */
+function closeQR(){
+    document.getElementById("qrModal").style.display = "none";
+}
+
+/* Search Function */
+function searchTable() {
+    const input = document.getElementById("searchInput").value.toLowerCase();
+    Array.from(tbody.rows).forEach(row => {
+        const match = row.cells[1].innerText.toLowerCase().includes(input);
+        row.style.display = match ? "" : "none";
+    });
+}
+
+renderTable();
+</script>
+
+</body>
+</html>
