@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Authority Dashboard</title>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    body {
+        margin: 0;
+        font-family: 'Inter', sans-serif;
+        background: #f3f4f6;
+        color: #1f2937;
+        display: flex;
+    }
+
+    .sidebar {
+        width: 240px;
+        background: #1e3a8a;
+        height: 100vh;
+        padding: 32px 20px;
+        border-right: 1px solid #1e40af;
+        box-sizing: border-box;
+    }
+    .sidebar h2 {
+        color: #ffffff;
+        font-size: 22px;
+        margin-bottom: 40px;
+        font-weight: 700;
+    }
+    .sidebar a {
+        display: block;
+        margin-bottom: 18px;
+        padding: 10px 12px;
+        text-decoration: none;
+        color: #e0e7ff;
+        font-weight: 500;
+        border-radius: 6px;
+        transition: 0.2s;
+        font-size: 15px;
+    }
+    .sidebar a:hover {
+        background: #374bb7;
+        color: #fff;
+    }
+
+    .main {
+        flex: 1;
+        padding: 35px;
+    }
+
+    h1 {
+        margin-bottom: 25px;
+        color: #1e3a8a;
+        font-size: 26px;
+        font-weight: 700;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background: #ffffff;
+        border-radius: 10px;
+        overflow: hidden;
+        border: 1px solid #d1d5db;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    th, td {
+        padding: 16px 18px;
+        border-bottom: 1px solid #e5e7eb;
+        font-size: 15px;
+    }
+    th {
+        background: #eef2ff;
+        color: #1e3a8a;
+        font-weight: 600;
+        text-align: left;
+    }
+    tr:hover {
+        background: #f9fafb;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        transition: 0.2s;
+    }
+    .accept-btn {
+        background: #2563eb;
+        color: white;
+    }
+    .accept-btn:hover { background: #1e4ed8; }
+
+    .tender-btn {
+        background: #6b7280;
+        color: white;
+        margin-left: 8px;
+    }
+    .tender-btn:hover { background: #4b5563; }
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+    <h2>Authority ⚖️</h2>
+    <a href="#">Dashboard</a>
+    <a href="tender_page.html">Tender List</a>
+    <a href="#">Profile</a>
+</div>
+
+<div class="main">
+    <h1>Pending CSR Requests</h1>
+
+    <table id="authorityTable">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Issue</th>
+                <th>Requested By</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- CSR applied data from backend will appear here -->
+        </tbody>
+    </table>
+</div>
+
+<script>
+// Placeholder data (backend will replace this)
+const authorityData = [
+    {id: 1, issue: "Clean Park", user: "CSR Company A"},
+    {id: 2, issue: "Donate Books", user: "CSR Group X"},
+    {id: 3, issue: "Tree Plantation", user: "GreenTech CSR Pvt. Ltd."},
+    {id: 4, issue: "Food Distribution", user: "Relief CSR Wing"},
+    {id: 5, issue: "Public Library Setup", user: "EduServe Foundation"},
+    {id: 6, issue: "Road Safety Awareness", user: "DriveSafe CSR"},
+    {id: 7, issue: "Medical Camp Support", user: "HealthPlus CSR Trust"},
+    {id: 8, issue: "Women Empowerment Program", user: "Lotus CSR Initiative"},
+    {id: 9, issue: "Slum Education Drive", user: "BrightFuture CSR Group"},
+    {id: 10, issue: "Waste Segregation Awareness", user: "CleanCity CSR Unit"}
+];
+
+const tbody = document.querySelector("#authorityTable tbody");
+
+function loadAuthorityData() {
+    tbody.innerHTML = "";
+    authorityData.forEach(item => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${item.id}</td>
+            <td>${item.issue}</td>
+            <td>${item.user}</td>
+            <td>
+                <button class="btn accept-btn" onclick="acceptIssue(${item.id})">Accept</button>
+                <button class="btn tender-btn" onclick="openTender(${item.id})">Tender</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function acceptIssue(id) {
+    alert("Authority accepted issue ID: " + id);
+    // TODO: Send acceptance info to backend
+}
+
+function openTender(id) {
+    window.location.href = "tender_page.html?issue=" + id;
+}
+
+loadAuthorityData();
+</script>
+
+</body>
+</html>
