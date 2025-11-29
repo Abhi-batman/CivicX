@@ -125,3 +125,9 @@ const deleteReport = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, "Report deleted successfully"));
 });
+
+export {submitReport,
+        updateDescription,
+        deleteReport
+
+}
