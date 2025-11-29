@@ -43,7 +43,7 @@ const userSchema = new Schema(
       type: String,
       required: [true, "Password is required"],
     },
-    Points: {
+    points: {
       type: Number,
       required: true,
       default: 0,
