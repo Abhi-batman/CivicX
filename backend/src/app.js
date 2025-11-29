@@ -1,5 +1,5 @@
 import express from "express";
-// import { User } from "./models/user.model.js";
+import { User } from "./models/user.model.js";
 
 import cookieParser from "cookie-parser";
 import cors from "cors";
