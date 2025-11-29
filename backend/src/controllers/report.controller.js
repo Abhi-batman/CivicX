@@ -126,8 +126,96 @@ const deleteReport = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, "Report deleted successfully"));
 });
 
+const getAllReport = asyncHandler(async (req, res) => {
+  let {
+    page = 1,
+    limit = 10,
+    query = "",
+    sortBy = "createdAt",
+    sortType = "desc",
+    userId,
+    category,
+    status
+  } = req.query;
+
+  page = parseInt(page);
+  limit = parseInt(limit);
+
+  const skip = (page - 1) * limit;
+
+  const filter = {};
+
+  
+  if (query) {
+    filter.$or = [
+      { title: { $regex: query, $options: "i" } },
+      { description: { $regex: query, $options: "i" } }
+    ];
+  }
+
+  
+  if (userId) {
+    filter.reportedBy = userId;
+  }
+
+  
+  if (category) {
+    filter.category = category;
+  }
+
+  if (status) {
+    filter.status = status;
+  }
+
+  const sort = {};
+  sort[sortBy] = sortType === "asc" ? 1 : -1;
+
+  const totalReports = await Report.countDocuments(filter);
+
+  
+  if (skip >= totalReports && totalReports > 0) {
+    throw new ApiError(400, "No more reports");
+  }
+
+  const reports = await Report.find(filter)
+    .populate("reportedBy", "username fullname profilePhoto")
+    .sort(sort)
+    .skip(skip)
+    .limit(limit);
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        {
+          total: totalReports,
+          page,
+          limit,
+          reports
+        },
+        "Reports fetched successfully"
+      )
+    );
+});
+
+const getReportbyId = asyncHandler(async(req,res) =>{
+
+    const report = await Report.findById(req.params.id)
+
+    if(!report){
+        throw new ApiError(404, "Report not found")
+    }
+
+    return res
+    .status(200)
+    .json(new ApiResponse(200, {report}, "Report fetched successfully"))
+})
+
+
 export {submitReport,
         updateDescription,
-        deleteReport
-
+        deleteReport,
+        getAllReport,
+        getReportbyId
 }
