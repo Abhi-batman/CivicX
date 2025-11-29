@@ -158,11 +158,19 @@
 </div>
 
 <script>
+    /* =======================
+          BACKEND BASE URL
+       ======================= */
+    const API_BASE = "http://localhost:5000/api";
+
     let role = "authority";
 
     const authorityFields = document.getElementById("authorityFields");
     const csrFields = document.getElementById("csrFields");
 
+    /* =======================
+        ROLE SWITCH BUTTONS
+       ======================= */
     document.getElementById("authBtn").onclick = function () {
         role = "authority";
         this.classList.add("active");
@@ -181,7 +189,10 @@
         csrFields.style.display = "block";
     };
 
-    function loginUser() {
+    /* =======================
+           LOGIN FUNCTION
+       ======================= */
+    async function loginUser() {
         const email = document.getElementById("email").value.trim();
         const pass = document.getElementById("password").value.trim();
 
@@ -190,31 +201,57 @@
             return;
         }
 
-        if (role === "authority") {
-            const code = document.getElementById("authCode").value.trim();
-            const loc = document.getElementById("location").value.trim();
+        try {
+            if (role === "authority") {
+                const authCode = document.getElementById("authCode").value.trim();
+                const location = document.getElementById("location").value.trim();
 
-            if (!code || !loc) {
-                alert("Authority: Please fill all fields.");
-                return;
+                if (!authCode || !location) {
+                    alert("Authority: Please fill all fields.");
+                    return;
+                }
+
+                const res = await fetch(`${API_BASE}/authority/login`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, password: pass, authorityCode: authCode, location })
+                });
+
+                const data = await res.json();
+                if (!res.ok) return alert(data.message || "Authority login failed");
+
+                localStorage.setItem("authority_token", data.token);
+
+                window.location.href = "authority_dashboard.html";
+            } 
+            else {
+                const cname = document.getElementById("companyName").value.trim();
+                const cid = document.getElementById("companyId").value.trim();
+
+                if (!cname || !cid) {
+                    alert("CSR: Please fill all fields.");
+                    return;
+                }
+
+                const res = await fetch(`${API_BASE}/csr/login`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, password: pass, companyName: cname, companyId: cid })
+                });
+
+                const data = await res.json();
+                if (!res.ok) return alert(data.message || "CSR login failed");
+
+                localStorage.setItem("csr_token", data.token);
+
+                window.location.href = "csr_dashboard.html";
             }
-
-            window.location.href = "authority_dashboard.html";
-        } 
-        else {
-            const cname = document.getElementById("companyName").value.trim();
-            const cid = document.getElementById("companyId").value.trim();
-
-            if (!cname || !cid) {
-                alert("CSR: Please fill all fields.");
-                return;
-            }
-
-            window.location.href = "csr_dashboard.html";
+        } catch (err) {
+            console.error(err);
+            alert("Something went wrong. Try again.");
         }
     }
 </script>
 
 </body>
 </html>
- 

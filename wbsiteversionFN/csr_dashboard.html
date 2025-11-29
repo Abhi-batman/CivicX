@@ -86,7 +86,7 @@
         color: #1e3a8a;
     }
 
-    /* Search bar */
+    /* Search */
     .search-container {
         margin-bottom: 20px;
         display: flex;
@@ -148,7 +148,7 @@
         background: #036548;
     }
 
-    /* QR Popup */
+    /* QR Modal */
     #qrModal {
         display:none; 
         position:fixed; 
@@ -182,36 +182,36 @@
 <!-- Main -->
 <div class="main">
 
-    <h1>CSR Issue Board</h1>
+    <h1>CSR Tenders</h1>
 
     <!-- Info Cards -->
     <div class="cards">
         <div class="card">
-            <h3>Total Issues</h3>
+            <h3>Total Tenders</h3>
             <p id="totalIssues">0</p>
         </div>
         <div class="card">
-            <h3>Applied</h3>
+            <h3>Accepted</h3>
             <p id="appliedCount">0</p>
         </div>
         <div class="card">
-            <h3>Donated</h3>
+            <h3>Donations</h3>
             <p id="donatedCount">0</p>
         </div>
     </div>
 
     <!-- Search -->
     <div class="search-container">
-        <input type="text" id="searchInput" placeholder="Search issues..." onkeyup="searchTable()">
+        <input type="text" id="searchInput" placeholder="Search tenders..." onkeyup="searchTable()">
     </div>
 
-    <!-- Issues Table -->
+    <!-- Table -->
     <table id="issuesTable">
         <thead>
             <tr>
                 <th>#</th>
-                <th>Issue</th>
-                <th>Description</th>
+                <th>Title</th>
+                <th>Details</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -220,7 +220,7 @@
 
 </div>
 
-<!-- QR Modal -->
+<!-- QR Popup -->
 <div id="qrModal">
     <div id="qrBox">
         <h3 style="color:#1e3a8a;">Scan & Pay</h3>
@@ -234,33 +234,60 @@
 </div>
 
 <script>
-/* BACKEND API BASE URL */
-const API_BASE = "https://your-backend-url.com/api";
-
-/* Issue List */
-const issues = [
-    {id:1, title:"Clean Park", desc:"Need volunteers to clean park."},
-    {id:2, title:"Donate Books", desc:"Donate old books to school."},
-    {id:3, title:"Tree Plantation", desc:"Plant trees in designated areas."},
-    {id:4, title:"Food Drive", desc:"Collect and distribute food packets."}
-];
-
-const tbody = document.querySelector("#issuesTable tbody");
+/* ===========================
+    BACKEND API BASE URL
+   =========================== */
+const API_BASE = "http://localhost:5000/api/csr"; // ← change this!
+let issues = [];
 let appliedCount = 0;
 let donatedCount = 0;
 
-/* Load Issues Table */
+const tbody = document.querySelector("#issuesTable tbody");
+
+/* ===========================
+    CHECK LOGIN JWT
+   =========================== */
+const token = localStorage.getItem("csr_token");
+if (!token) {
+    alert("Session expired. Login again.");
+    window.location.href = "authority_login.html";
+}
+
+/* ===========================
+    LOAD TENDERS FROM BACKEND
+   =========================== */
+async function loadIssues() {
+    try {
+        const res = await fetch(`${API_BASE}/tenders`, {
+            method: "GET",
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+
+        const data = await res.json();
+        issues = data.tenders || [];
+
+        renderTable();
+    } catch (err) {
+        console.error(err);
+        alert("Failed to load tenders.");
+    }
+}
+
+/* ===========================
+    RENDER TABLE
+   =========================== */
 function renderTable() {
     tbody.innerHTML = "";
-    issues.forEach(issue => {
+
+    issues.forEach((issue, index) => {
         tbody.innerHTML += `
             <tr>
-                <td>${issue.id}</td>
+                <td>${index + 1}</td>
                 <td>${issue.title}</td>
-                <td>${issue.desc}</td>
+                <td>${issue.description}</td>
                 <td>
-                    <button class="btn apply-btn" onclick="applyIssue(${issue.id}, this)">Apply</button>
-                    <button class="btn donate-btn" onclick="donateIssue(${issue.id})">Donate</button>
+                    <button class="btn apply-btn" onclick="applyIssue('${issue._id}', this)">Accept</button>
+                    <button class="btn donate-btn" onclick="donateIssue('${issue._id}')">Donate</button>
                 </td>
             </tr>
         `;
@@ -269,46 +296,54 @@ function renderTable() {
     document.getElementById("totalIssues").innerText = issues.length;
 }
 
-/* APPLY Function */
-async function applyIssue(id, btn){
-    btn.style.background = "#16a34a"; 
-    btn.innerText = "✓ Applied";
+/* ===========================
+        ACCEPT TENDER
+   =========================== */
+async function applyIssue(id, btn) {
+    btn.innerText = "Processing...";
+    btn.style.background = "#6366f1";
 
-    appliedCount++;
-    document.getElementById("appliedCount").innerText = appliedCount;
+    try {
+        const res = await fetch(`${API_BASE}/tenders/${id}/accept`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            }
+        });
 
-    await fetch(`${API_BASE}/csr/apply`, {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({issue_id:id})
-    });
+        if (res.ok) {
+            appliedCount++;
+            document.getElementById("appliedCount").innerText = appliedCount;
 
-    setTimeout(()=>{
-        btn.style.background = "#1e3a8a";
-        btn.innerText = "Apply";
-    }, 2000);
+            btn.innerText = "✓ Accepted";
+            btn.style.background = "#16a34a";
+        } else {
+            btn.innerText = "Error";
+            btn.style.background = "red";
+        }
+    } catch (error) {
+        btn.innerText = "Failed";
+        btn.style.background = "red";
+    }
 }
 
-/* DONATE Function */
-async function donateIssue(id){
-    document.getElementById("qrModal").style.display = "flex";
-
+/* ===========================
+        DONATION POPUP
+   =========================== */
+function donateIssue() {
     donatedCount++;
     document.getElementById("donatedCount").innerText = donatedCount;
-
-    await fetch(`${API_BASE}/csr/donate`, {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({issue_id:id})
-    });
+    document.getElementById("qrModal").style.display = "flex";
 }
 
-/* Close QR */
-function closeQR(){
+function closeQR() {
     document.getElementById("qrModal").style.display = "none";
 }
 
-/* Search Function */
+/* ===========================
+        SEARCH FILTER
+   =========================== */
 function searchTable() {
     const input = document.getElementById("searchInput").value.toLowerCase();
     Array.from(tbody.rows).forEach(row => {
@@ -317,7 +352,8 @@ function searchTable() {
     });
 }
 
-renderTable();
+/* INITIAL LOAD */
+loadIssues();
 </script>
 
 </body>
