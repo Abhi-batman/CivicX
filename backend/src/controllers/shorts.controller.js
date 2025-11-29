@@ -104,4 +104,65 @@ const deleteShorts = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "Shorts deleted successfully"));
 });
 
-export { uploadShorts, shareShorts, deleteShorts };
+import { User } from "../models/user.model.js";
+import { ApiError } from "../utils/apiError.js";
+import { ApiResponse } from "../utils/apiResponse.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
+
+const getShorts = asyncHandler(async (req, res) => {
+  const { username } = req.params;
+
+  if (!username?.trim()) {
+    throw new ApiError(400, "Username is missing");
+  }
+
+  const shortsData = await User.aggregate([
+   
+    {
+      $match: {
+        username: { $regex: `^${username}$`, $options: "i" },
+      },
+    },
+
+   
+    {
+      $lookup: {
+        from: "shorts",
+        localField: "_id",
+        foreignField: "postedBy",
+        as: "shorts",
+      },
+    },
+
+    {
+      $addFields: {
+        shortsCount: { $size: "$shorts" },
+      },
+    },
+
+    
+    {
+      $project: {
+        fullName: 1,
+        username: 1,
+        profilePhoto: 1,
+        email: 1,
+        shortsCount: 1,
+        shorts: 1,
+      },
+    },
+  ]);
+
+  if (!shortsData?.length) {
+    throw new ApiError(404, "User or Shorts not found");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, shortsData[0], "Shorts fetched successfully"));
+});
+
+export { getShorts };
+
+
+export { uploadShorts, shareShorts, deleteShorts, getShorts };

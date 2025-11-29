@@ -16,10 +16,10 @@ const csrSchema = new Schema({
         type: String,
         required: true
      },
-     donations:{
-       type: String,
-       required: true
-     },
+    //  donations:{
+    //    type: String,
+    //    required: true
+    //  },
      issuesResolved:[
         report:{
             type: Schema.Types.ObjectId,
