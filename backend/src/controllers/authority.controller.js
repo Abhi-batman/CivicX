@@ -61,6 +61,12 @@ const markReportResolved = asyncHandler(async (req, res) => {
 
   if (!report) throw new ApiError(404, "Report not found");
 
+  await User.findByIdAndUpdate(report.reportedBy, {
+    $inc: { points: 5 },
+  });
+
+  if (!report) throw new ApiError(404, "Report not found");
+
   return res
     .status(200)
     .json(new ApiResponse(200, report, "Report marked as resolved"));
