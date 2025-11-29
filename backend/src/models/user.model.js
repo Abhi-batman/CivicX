@@ -33,12 +33,12 @@ const userSchema = new Schema(
       url: { type: String, required: true },
       public_id: { type: String },
     },
-    shorts:[
-        {
-            type: Schema.Types.ObjectId,
-            ref: "Shorts"
-        }
-    ]
+    shorts: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Shorts",
+      },
+    ],
     password: {
       type: String,
       required: [true, "Password is required"],
@@ -52,14 +52,14 @@ const userSchema = new Schema(
   { timestamps: true }
 );
 
-userSchema.pre("save", async function(next) {
+userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
 
   this.password = await bcrypt.hash(this.password, 10);
   next();
 });
 
-userSchema.methods.isPasswordCorrect = async function(password) {
+userSchema.methods.isPasswordCorrect = async function (password) {
   return await bcrypt.compare(password, this.password);
 };
 
