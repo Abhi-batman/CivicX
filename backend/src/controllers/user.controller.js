@@ -1,10 +1,10 @@
-import { User } from "../models/user.model";
+import { User } from "../models/user.model.js";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
-import { ApiError } from "../utils/apiError";
-import { ApiResponse } from "../utils/apiResponse";
-import { asyncHandler } from "../utils/asyncHandler";
-import { uploadOnCloudinary } from "../utils/cloudinary";
+import { ApiError } from "../utils/ApiError.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
+import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
 // generate access and refresh token
 const generateAccessAndRefreshToken = async (userId) => {
@@ -67,7 +67,7 @@ const registerUser = asyncHandler(async (req, res) => {
     profilePhoto: uploadedProfilePhoto,
     email,
     password,
-    points: 0
+    points: 0,
   });
   //check if user is created successfully or throw error
   if (!createdUser) {

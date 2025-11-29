@@ -8,6 +8,8 @@ import {
   submitReport,
   updateDescription,
   deleteReport,
+  getAllReport,
+  getReportbyId,
 } from "../controllers/report.controller.js";
 
 const router = Router();
@@ -18,6 +20,6 @@ router
 router.route("/deleteReport/:id").delete(verifyJWT, deleteReport);
 router.route("/updateDescription/:id").patch(verifyJWT, updateDescription);
 router.route("/getReport/:id").get(verifyJWT, getReportbyId);
-router.route("/getAllReports").get(getAllReports);
+router.route("/getAllReports").get(getAllReport);
 
 export default router;

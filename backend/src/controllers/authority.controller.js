@@ -1,16 +1,16 @@
 import { Authority } from "../models/authority.model.js";
 import { Report } from "../models/report.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { ApiError } from "../utils/apiError.js";
-import { ApiResponse } from "../utils/apiResponse.js";
+import { ApiError } from "../utils/ApiError.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-
 
 const authorityLogin = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
-  if (!email || !password) throw new ApiError(400, "Email and password required");
+  if (!email || !password)
+    throw new ApiError(400, "Email and password required");
 
   const authority = await Authority.findOne({ email });
 
@@ -26,15 +26,27 @@ const authorityLogin = asyncHandler(async (req, res) => {
     { expiresIn: process.env.ACCESS_TOKEN_EXPIRY }
   );
 
-  return res.status(200).json(new ApiResponse(200, { authority, accessToken }, "Authority logged in successfully"));
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { authority, accessToken },
+        "Authority logged in successfully"
+      )
+    );
 });
-
 
 const getReportedIssues = asyncHandler(async (req, res) => {
-  const reports = await Report.find().populate("reportedBy", "fullname username profilePhoto").sort({ createdAt: -1 });
-  return res.status(200).json(new ApiResponse(200, reports, "Reported issues fetched successfully"));
+  const reports = await Report.find()
+    .populate("reportedBy", "fullname username profilePhoto")
+    .sort({ createdAt: -1 });
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, reports, "Reported issues fetched successfully")
+    );
 });
-
 
 const markReportResolved = asyncHandler(async (req, res) => {
   const { reportId } = req.body;
@@ -49,30 +61,33 @@ const markReportResolved = asyncHandler(async (req, res) => {
 
   if (!report) throw new ApiError(404, "Report not found");
 
-  return res.status(200).json(new ApiResponse(200, report, "Report marked as resolved"));
+  return res
+    .status(200)
+    .json(new ApiResponse(200, report, "Report marked as resolved"));
 });
-
 
 const releaseTender = asyncHandler(async (req, res) => {
   const { reportId, tenderDetails } = req.body;
 
-  if (!reportId || !tenderDetails) throw new ApiError(400, "Report ID and tender details required");
+  if (!reportId || !tenderDetails)
+    throw new ApiError(400, "Report ID and tender details required");
 
   const report = await Report.findById(reportId);
 
   if (!report) throw new ApiError(404, "Report not found");
 
-
   report.tender = {
     details: tenderDetails,
     releasedBy: req.authority._id,
     releasedAt: new Date(),
-    acceptedBy: null
+    acceptedBy: null,
   };
 
   await report.save();
 
-  return res.status(200).json(new ApiResponse(200, report, "Tender released successfully"));
+  return res
+    .status(200)
+    .json(new ApiResponse(200, report, "Tender released successfully"));
 });
 
 export { authorityLogin, getReportedIssues, markReportResolved, releaseTender };
