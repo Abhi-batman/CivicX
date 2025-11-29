@@ -28,12 +28,12 @@ app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 
 app.use(cookieParser());
 
-//importing the routes
+// importing the routes
 
-// import userRouter from "./routes/user.route.js";
-// import postRouter from "./routes/post.route.js";
+import userRouter from "./routes/user.route.js";
+import postRouter from "./routes/post.route.js";
 
-// app.use("/api/v1/users", userRouter);
-// app.use("/api/v1/post", postRouter);
+app.use("/api/v1/users", userRouter);
+app.use("/api/v1/post", postRouter);
 
 export { app };

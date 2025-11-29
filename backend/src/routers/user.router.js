@@ -8,27 +8,23 @@ import {
   updateProfilePhoto,
   getUser,
   getReport,
-} from "../controllers/user.controller.js"
-
+} from "../controllers/user.controller.js";
 
 const router = Router();
 
-router.route("/register").post(
-    upload.single(
-       "profilePhoto"
-    ),
-    registerUser
-)
+router.route("/register").post(upload.single("profilePhoto"), registerUser);
 
-router.route("/login").post(loginUser)
+router.route("/login").post(loginUser);
 
-router.route("/logout").post(verifyJWT,  logoutUser)
+router.route("/logout").post(verifyJWT, logoutUser);
 
-router.route("/change-password").patch(verifyJWT, updatePassword)
-router.route("/update-profile").patch(verifyJWT, updateProfile)
-router.route("/c/:username").get(verifyJWT,getReport)
-router.route("/current-user").get(verifyJWT,getUser)
+router.route("/change-password").patch(verifyJWT, updatePassword);
+router.route("/update-profile").patch(verifyJWT, updateProfile);
+router.route("/c/:username").get(verifyJWT, getReport);
+router.route("/current-user").get(verifyJWT, getUser);
 
-router.route("/profile-photo").patch(verifyJWT, upload.single("profilePhoto"), updateProfilePhoto)
+router
+  .route("/profile-photo")
+  .patch(verifyJWT, upload.single("profilePhoto"), updateProfilePhoto);
 
-export default router
+export default router;

@@ -1,5 +1,5 @@
 import { ApiError } from "../utils/apiError.js";
-import { ApiResponse } from "../utils/apiResponse.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { Report } from "../models/report.model.js";
@@ -57,12 +57,8 @@ const updateDescription = asyncHandler(async (req, res) => {
   const { reportId } = req.params;
   const { oldDescription, newDescription } = req.body;
 
-  
   if (!oldDescription || !newDescription) {
-    throw new ApiError(
-      400,
-      "Old description and new description are required"
-    );
+    throw new ApiError(400, "Old description and new description are required");
   }
 
   if (oldDescription.trim() === "" || newDescription.trim() === "") {
@@ -73,14 +69,12 @@ const updateDescription = asyncHandler(async (req, res) => {
     throw new ApiError(400, "New description must be different");
   }
 
-  
   const report = await Report.findOne({ _id: reportId, user: req.user._id });
 
   if (!report) {
     throw new ApiError(404, "Report not found or not authorized");
   }
 
-  
   if (report.description !== oldDescription) {
     throw new ApiError(
       400,
@@ -88,7 +82,6 @@ const updateDescription = asyncHandler(async (req, res) => {
     );
   }
 
-  
   report.description = newDescription;
   await report.save();
 
@@ -99,7 +92,6 @@ const updateDescription = asyncHandler(async (req, res) => {
   );
 });
 
-
 const deleteReport = asyncHandler(async (req, res) => {
   const { reportId } = req.params;
 
@@ -107,13 +99,11 @@ const deleteReport = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Report ID is required");
   }
 
- 
   const report = await Report.findOne({ _id: reportId, user: req.user._id });
 
   if (!report) {
     throw new ApiError(404, "Report not found or not authorized");
   }
-
 
   if (report.image?.public_id) {
     await cloudinary.uploader.destroy(report.image.public_id);
