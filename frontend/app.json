@@ -1,0 +1,30 @@
+{
+  "expo": {
+    "name": "civic-issue-app",
+    "slug": "civic-issue-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#0F0F0F"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.example.civicissueapp"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#8B5CF6"
+      },
+      "package": "com.example.civicissueapp"
+    },
+    "web": {},
+    "plugins": [
+      "expo-font"
+    ]
+  }
+}
