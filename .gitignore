@@ -1,0 +1,46 @@
+# ───────────────────────────────────────────
+# ROOT IGNORE (affects backend + frontend)
+# ───────────────────────────────────────────
+
+# Node modules for both frontend and backend
+node_modules/
+
+# Expo & React Native
+.expo/
+.expo-shared/
+expo-build/
+metro-cache/
+*.apk
+*.aab
+
+# Environment files
+.env
+*.env
+
+# IDE files
+.idea/
+.vscode/
+
+# Logs
+npm-debug.log*
+yarn-error.log*
+*.log
+
+# Build folders
+dist/
+build/
+out/
+web-build/
+
+# Mac & Windows trash files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*~
+*.bak
+
+# Lockfiles (optional)
+package-lock.json
+yarn.lock
