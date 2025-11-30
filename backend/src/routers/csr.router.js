@@ -8,10 +8,11 @@ import {
   csrLogin,
   getReleasedTenders,
   acceptTenderRequest,
+  registerCsr
 } from "../controllers/csr.controller.js";
 const router = Router()
 router.post("/login", csrLogin);
-
+router.post("/register", registerCsr)
 
 router.get("/tenders", verifyJWT, getReleasedTenders);
 

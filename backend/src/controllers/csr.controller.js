@@ -6,6 +6,60 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
+const registerCsr = asyncHandler(async (req, res) => {
+  const {
+    companyName,
+    companyEmail,
+    password,
+    companyDescription,
+    donations,
+    companyProfilePhoto,
+  } = req.body;
+
+  if (
+    !companyName ||
+    !companyEmail ||
+    !password ||
+    !companyDescription ||
+    !donations ||
+    !companyProfilePhoto
+  ) {
+    throw new ApiError(400, "All fields are required");
+  }
+
+
+  const existing = await Csr.findOne({
+    $or: [{ companyEmail }, { companyName }],
+  });
+
+  if (existing)
+    throw new ApiError(
+      409,
+      "Company with this name or email already exists"
+    );
+
+
+  const csr = await Csr.create({
+    companyName,
+    companyEmail,
+    password,
+    companyDescription,
+    donations,
+    companyProfilePhoto,
+  });
+
+ 
+  const accessToken = csr.generateAccessToken();
+
+  return res.status(201).json(
+    new ApiResponse(
+      201,
+      { csr, accessToken },
+      "CSR registered successfully"
+    )
+  );
+});
+
 const csrLogin = asyncHandler(async (req, res) => {
   const { companyEmail, password } = req.body;
 
@@ -78,4 +132,4 @@ const acceptTenderRequest = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, report, "Tender request accepted successfully"));
 });
 
-export { csrLogin, getReleasedTenders, acceptTenderRequest };
+export { csrLogin, getReleasedTenders, acceptTenderRequest, registerCsr };
