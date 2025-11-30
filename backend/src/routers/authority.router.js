@@ -4,12 +4,12 @@ import { upload } from "../middlewares/multer.middleware.js";
 
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 
-import { authorityLogin, getReportedIssues, markReportResolved, releaseTender } from "../controllers/authority.controller.js";
+import { authorityLogin, getReportedIssues, markReportResolved, releaseTender, registerAuthority } from "../controllers/authority.controller.js";
 
 const router = Router()
 
 router.post("/login", authorityLogin);
-
+router.post("/register", registerAuthority)
 
 router.get("/issues", verifyJWT, getReportedIssues);
 

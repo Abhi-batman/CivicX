@@ -45,3 +45,5 @@ const shortsSchema = new Schema(
     },
     {timestamps: true}
 )
+
+export const Shorts = mongoose.model("Shorts", shortsSchema);

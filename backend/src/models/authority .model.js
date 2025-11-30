@@ -54,4 +54,4 @@ authoritySchema.methods.generateAccessToken = function () {
   );
 };
 
-export const Authority = mongoose.model("Authority", adminSchema)
+export const Authority = mongoose.model("Authority", authoritySchema)
