@@ -126,55 +126,121 @@
             </tr>
         </thead>
         <tbody>
-            <!-- CSR applied data from backend will appear here -->
+            <!-- populated dynamically -->
         </tbody>
     </table>
 </div>
 
 <script>
-// Placeholder data (backend will replace this)
-const authorityData = [
-    {id: 1, issue: "Clean Park", user: "CSR Company A"},
-    {id: 2, issue: "Donate Books", user: "CSR Group X"},
-    {id: 3, issue: "Tree Plantation", user: "GreenTech CSR Pvt. Ltd."},
-    {id: 4, issue: "Food Distribution", user: "Relief CSR Wing"},
-    {id: 5, issue: "Public Library Setup", user: "EduServe Foundation"},
-    {id: 6, issue: "Road Safety Awareness", user: "DriveSafe CSR"},
-    {id: 7, issue: "Medical Camp Support", user: "HealthPlus CSR Trust"},
-    {id: 8, issue: "Women Empowerment Program", user: "Lotus CSR Initiative"},
-    {id: 9, issue: "Slum Education Drive", user: "BrightFuture CSR Group"},
-    {id: 10, issue: "Waste Segregation Awareness", user: "CleanCity CSR Unit"}
-];
 
-const tbody = document.querySelector("#authorityTable tbody");
+// -------------------------------
+// CONFIG
+// -------------------------------
+const BASE_URL = "http://localhost:4000/api/authority";  // change if needed
+const token = localStorage.getItem("authorityToken");
 
-function loadAuthorityData() {
-    tbody.innerHTML = "";
-    authorityData.forEach(item => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td>${item.id}</td>
-            <td>${item.issue}</td>
-            <td>${item.user}</td>
-            <td>
-                <button class="btn accept-btn" onclick="acceptIssue(${item.id})">Accept</button>
-                <button class="btn tender-btn" onclick="openTender(${item.id})">Tender</button>
-            </td>
-        `;
-        tbody.appendChild(tr);
-    });
+// If no token → redirect to login page
+if (!token) {
+    window.location.href = "authority_login.html";
 }
 
-function acceptIssue(id) {
-    alert("Authority accepted issue ID: " + id);
-    // TODO: Send acceptance info to backend
+// -------------------------------
+// LOAD ISSUES
+// -------------------------------
+async function loadIssues() {
+    const tbody = document.querySelector("#authorityTable tbody");
+    tbody.innerHTML = `<tr><td colspan="4">Loading...</td></tr>`;
+
+    try {
+        const res = await fetch(`${BASE_URL}/issues`, {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            tbody.innerHTML = `<tr><td colspan="4">Error loading data</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = "";
+
+        data.issues.forEach((item, index) => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>${index + 1}</td>
+                <td>${item.title || "No Title"}</td>
+                <td>${item.createdBy?.name || "Unknown"}</td>
+                <td>
+                    <button class="btn accept-btn" onclick="resolveIssue('${item._id}')">Resolve</button>
+                    <button class="btn tender-btn" onclick="releaseTender('${item._id}')">Tender</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+    } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="4">Server error</td></tr>`;
+        console.log(err);
+    }
 }
 
-function openTender(id) {
-    window.location.href = "tender_page.html?issue=" + id;
+// -------------------------------
+// RESOLVE ISSUE → PATCH
+// -------------------------------
+async function resolveIssue(reportId) {
+    try {
+        const res = await fetch(`${BASE_URL}/issues/${reportId}/resolve`, {
+            method: "PATCH",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            }
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+            alert("Issue marked as resolved!");
+            loadIssues();
+        } else {
+            alert("Error: " + data.message);
+        }
+    } catch (e) {
+        alert("Server error");
+    }
 }
 
-loadAuthorityData();
+// -------------------------------
+// RELEASE TENDER → POST
+// -------------------------------
+async function releaseTender(reportId) {
+    try {
+        const res = await fetch(`${BASE_URL}/issues/${reportId}/release-tender`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ note: "Tender released by authority" })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+            alert("Tender released successfully!");
+            loadIssues();
+        } else {
+            alert("Error: " + data.message);
+        }
+    } catch (e) {
+        alert("Server error");
+    }
+}
+
+// Initial load
+loadIssues();
+
 </script>
 
 </body>
