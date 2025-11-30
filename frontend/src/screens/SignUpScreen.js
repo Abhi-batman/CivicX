@@ -20,6 +20,7 @@ const SignUpScreen = ({ navigation }) => {
     const insets = useSafeAreaInsets();
     const { signup } = useContext(AuthContext);
     const [name, setName] = useState('');
+    const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -32,7 +33,7 @@ const SignUpScreen = ({ navigation }) => {
     const handleSignUp = async () => {
         setError('');
 
-        if (!name || !email || !password || !confirmPassword) {
+        if (!name || !username || !email || !password || !confirmPassword) {
             setError('Please fill in all fields');
             return;
         }
@@ -54,7 +55,7 @@ const SignUpScreen = ({ navigation }) => {
 
         setLoading(true);
         try {
-            await signup(name, email, password);
+            await signup(name, username, email, password);
             // Navigation is handled by AppNavigator based on auth state
         } catch (err) {
             setError(err.message || 'Failed to create account. Please try again.');
@@ -99,6 +100,19 @@ const SignUpScreen = ({ navigation }) => {
                             value={name}
                             onChangeText={setName}
                             autoCapitalize="words"
+                        />
+                    </View>
+
+                    <View style={styles.inputContainer}>
+                        <Ionicons name="at-outline" size={20} color={COLORS.textSecondary} />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Username"
+                            placeholderTextColor={COLORS.textTertiary}
+                            value={username}
+                            onChangeText={setUsername}
+                            autoCapitalize="none"
+                            autoCorrect={false}
                         />
                     </View>
 

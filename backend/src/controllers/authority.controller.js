@@ -14,7 +14,7 @@ const registerAuthority = asyncHandler(async (req, res) => {
   if (!name || !email || !password || !designation || !category)
     throw new ApiError(400, "All fields are required");
 
-  
+
   const existingAuthority = await Authority.findOne({ email });
   if (existingAuthority)
     throw new ApiError(409, "Authority with this email already exists");
@@ -28,7 +28,7 @@ const registerAuthority = asyncHandler(async (req, res) => {
     category,
   });
 
-  
+
   const accessToken = authority.generateAccessToken();
 
   return res
@@ -132,4 +132,4 @@ const releaseTender = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, report, "Tender released successfully"));
 });
 
-export { authorityLogin, getReportedIssues, markReportResolved, releaseTender, registerAuthority  };
+export { authorityLogin, getReportedIssues, markReportResolved, releaseTender, registerAuthority };

@@ -25,7 +25,9 @@ const HomeScreen = ({ navigation }) => {
 
     const fetchIssues = useCallback(async () => {
         try {
-            const data = await issueApi.getAllIssues();
+            const response = await issueApi.getAllIssues();
+            const data = response.issues || response || [];
+
             // Sort by upvotes descending, then by date
             const sortedData = data.sort((a, b) => {
                 if (b.upvotes !== a.upvotes) {

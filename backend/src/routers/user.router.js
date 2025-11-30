@@ -29,3 +29,4 @@ router
   .patch(verifyJWT, upload.single("profilePhoto"), updateProfilePhoto);
 
 export default router;
+
