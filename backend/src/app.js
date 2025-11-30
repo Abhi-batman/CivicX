@@ -32,7 +32,7 @@ app.use(cookieParser());
 
 import userRouter from "./routers/user.router.js";
 import reportRouter from "./routers/report.router.js";
-import authorityRouter from "./routers/authority.router"
+import authorityRouter from "./routers/authority.router.js"
 import csrRouter from "./routers/csr.router.js"
 
 app.use("/api/v1/users", userRouter);

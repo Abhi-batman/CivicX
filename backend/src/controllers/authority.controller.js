@@ -1,4 +1,4 @@
-import { Authority } from "../models/authority.model.js";
+import { Authority } from "../models/authority .model.js";
 import { Report } from "../models/report.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
