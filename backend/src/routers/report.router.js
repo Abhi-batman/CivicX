@@ -20,6 +20,6 @@ router
 router.route("/deleteReport/:id").delete(verifyJWT, deleteReport);
 router.route("/updateDescription/:id").patch(verifyJWT, updateDescription);
 router.route("/getReport/:id").get(verifyJWT, getReportbyId);
-router.route("/getAllReports").get(getAllReport);
+router.route("/getAllReports").get(verifyJWT,getAllReport);
 
 export default router;

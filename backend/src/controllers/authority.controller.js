@@ -42,37 +42,58 @@ const registerAuthority = asyncHandler(async (req, res) => {
     );
 });
 
-const authorityLogin = asyncHandler(async (req, res) => {
+ const authorityLogin = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
-  if (!email || !password)
-    throw new ApiError(400, "Email and password required");
 
+  if (!email || !password) {
+    throw new ApiError(400, "Email and password are required");
+  }
+
+  
   const authority = await Authority.findOne({ email });
-
-  if (!authority) throw new ApiError(404, "Authority not found");
+  if (!authority) {
+    throw new ApiError(404, "Authority not found");
+  }
 
   const isPasswordValid = await bcrypt.compare(password, authority.password);
+  if (!isPasswordValid) {
+    throw new ApiError(401, "Invalid password");
+  }
 
-  if (!isPasswordValid) throw new ApiError(401, "Invalid password");
+ 
+  if (!process.env.ACCESS_TOKEN_SECRET) {
+    throw new ApiError(500, "ACCESS_TOKEN_SECRET not set in environment");
+  }
 
   const accessToken = jwt.sign(
-    { id: authority._id, email: authority.email, name: authority.name },
-    process.env.AUTHORITY_ACCESS_TOKEN_SECRET,
-    { expiresIn: process.env.ACCESS_TOKEN_EXPIRY }
+    {
+      id: authority._id,
+      email: authority.email,
+      name: authority.name,
+    },
+    process.env.ACCESS_TOKEN_SECRET,
+    {
+      expiresIn: process.env.ACCESS_TOKEN_EXPIRY || "1d",
+    }
   );
 
-  return res
-    .status(200)
-    .json(
-      new ApiResponse(
-        200,
-        { authority, accessToken },
-        "Authority logged in successfully"
-      )
-    );
-});
 
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        authority: {
+          id: authority._id,
+          name: authority.name,
+          email: authority.email,
+        },
+        accessToken,
+      },
+      "Authority logged in successfully"
+    )
+  );
+});
 const getReportedIssues = asyncHandler(async (req, res) => {
   const reports = await Report.find()
     .populate("reportedBy", "fullname username profilePhoto")
