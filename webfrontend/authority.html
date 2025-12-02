@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login / Register</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: "Inter", sans-serif;
+            background: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 380px;
+            background: white;
+            padding: 30px 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        p.subtitle {
+            color: #555;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .role-switch {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .role-btn {
+            width: 48%;
+            padding: 10px 0;
+            font-size: 14px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            cursor: pointer;
+            background: #f7f7f7;
+            transition: 0.2s;
+        }
+
+        .role-btn.active {
+            background: #000;
+            color: #fff;
+            border-color: #000;
+            font-weight: 600;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        button.submit-btn {
+            width: 100%;
+            padding: 12px;
+            margin-top: 12px;
+            border: none;
+            border-radius: 8px;
+            background: black;
+            color: white;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        button.submit-btn:hover {
+            background: #333;
+        }
+
+        .footer {
+            margin-top: 15px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .footer button {
+            background: none;
+            border: none;
+            color: #007bff;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .footer button:hover {
+            text-decoration: underline;
+        }
+
+        .form-container {
+            display: none;
+        }
+
+        .form-container.active {
+            display: block;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Welcome</h1>
+        <p class="subtitle">Please log in or register</p>
+
+        <!-- LOGIN FORM -->
+        <div id="loginForm" class="form-container active">
+            <form id="login-form">
+                <input type="email" id="loginEmail" placeholder="Email" required>
+                <input type="password" id="loginPassword" placeholder="Password" required>
+                <button type="submit" class="submit-btn">Login</button>
+                <p class="error-message" id="loginError"></p>
+            </form>
+            <div class="footer">
+                Don't have an account? <button onclick="showRegisterForm()">Register</button>
+            </div>
+        </div>
+
+        <!-- REGISTER FORM -->
+        <div id="registerForm" class="form-container">
+            <form id="register-form">
+                <input type="text" id="regName" placeholder="Full Name" required>
+                <input type="email" id="regEmail" placeholder="Email" required>
+                <input type="password" id="regPassword" placeholder="Password" required>
+                <input type="text" id="regDesignation" placeholder="Designation" required>
+                <input type="text" id="regCategory" placeholder="Category" required>
+                <button type="submit" class="submit-btn">Register</button>
+                <p class="error-message" id="registerError"></p>
+            </form>
+            <div class="footer">
+                Already have an account? <button onclick="showLoginForm()">Login</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const API_BASE = "http://localhost:3000/api/v1";
+
+        // Show login/register
+        function showRegisterForm() {
+            document.getElementById("loginForm").classList.remove("active");
+            document.getElementById("registerForm").classList.add("active");
+        }
+
+        function showLoginForm() {
+            document.getElementById("registerForm").classList.remove("active");
+            document.getElementById("loginForm").classList.add("active");
+        }
+
+        // LOGIN
+        document.getElementById("login-form").addEventListener("submit", async e => {
+            e.preventDefault();
+            const email = document.getElementById("loginEmail").value.trim();
+            const password = document.getElementById("loginPassword").value.trim();
+            const errorDisplay = document.getElementById("loginError");
+            errorDisplay.textContent = "";
+            try {
+                const res = await fetch(`${API_BASE}/authority/login`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || "Login failed");
+
+                // Save JWT token
+                localStorage.setItem("authorityToken", data.data.accessToken);
+
+                // Redirect to Authority Dashboard
+                window.location.href = "authority_dashboard.html";
+
+            } catch (err) {
+                errorDisplay.textContent = err.message;
+            }
+        });
+
+        // REGISTER
+        document.getElementById("register-form").addEventListener("submit", async e => {
+            e.preventDefault();
+            const name = document.getElementById("regName").value.trim();
+            const email = document.getElementById("regEmail").value.trim();
+            const password = document.getElementById("regPassword").value.trim();
+            const designation = document.getElementById("regDesignation").value.trim();
+            const category = document.getElementById("regCategory").value.trim();
+            const errorDisplay = document.getElementById("registerError");
+            errorDisplay.textContent = "";
+            try {
+                const res = await fetch(`${API_BASE}/authority/register`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ name, email, password, designation, category })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || "Registration failed");
+
+                // Show login after successful registration
+                alert("Registration successful! Please log in.");
+                showLoginForm();
+            } catch (err) {
+                errorDisplay.textContent = err.message;
+            }
+        });
+    </script>
+</body>
+
+</html>
