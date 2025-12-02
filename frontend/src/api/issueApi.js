@@ -1,126 +1,184 @@
 import apiClient from './apiClient';
 
-// Mock data for development when backend is not connected
-const MOCK_ISSUES = [
-    {
-        id: '1',
-        title: 'Deep Pothole on Main St',
-        description: 'There is a very deep pothole near the bus stop. It is dangerous for cars.',
-        category: 'Roads',
-        location: 'Main St & 5th Ave',
-        coordinates: { latitude: 37.78825, longitude: -122.4324 },
-        upvotes: 120,
-        imageUrl: 'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=800&q=80',
-        createdAt: '2023-10-25T10:00:00Z',
-        status: 'open',
-    },
-    {
-        id: '2',
-        title: 'Overflowing Garbage Bin',
-        description: 'The garbage bin in the park is overflowing and smells bad.',
-        category: 'Sanitation',
-        location: 'Central Park',
-        coordinates: { latitude: 37.78925, longitude: -122.4344 },
-        upvotes: 85,
-        imageUrl: 'https://images.unsplash.com/photo-1530587191325-3db32d826c18?auto=format&fit=crop&w=800&q=80',
-        createdAt: '2023-10-24T14:30:00Z',
-        status: 'open',
-    },
-    {
-        id: '3',
-        title: 'Broken Street Light',
-        description: 'Street light #452 is flickering and mostly off at night.',
-        category: 'Lighting',
-        location: 'Elm Street',
-        coordinates: { latitude: 37.78725, longitude: -122.4314 },
-        upvotes: 45,
-        imageUrl: 'https://images.unsplash.com/photo-1517487002384-a781791775d8?auto=format&fit=crop&w=800&q=80',
-        createdAt: '2023-10-26T09:15:00Z',
-        status: 'resolved',
-    },
-];
-
 const issueApi = {
-    getAllIssues: async () => {
+    getAllIssues: async (filters = {}) => {
         try {
-            // Replace with actual API call:
-            // const response = await apiClient.get('/issues');
-            // return response.data;
+            const { status, category, page = 1, limit = 10 } = filters;
 
-            // Returning mock data for now
-            return new Promise((resolve) => {
-                setTimeout(() => resolve(MOCK_ISSUES), 500);
-            });
+            const params = new URLSearchParams();
+            if (status) params.append('status', status);
+            if (category) params.append('category', category);
+            params.append('page', page);
+            params.append('limit', limit);
+
+            const response = await apiClient.get(`/api/v1/report/getAllReports?${params.toString()}`);
+
+            if (response.data && response.data.data) {
+                const { reports, total, page: currentPage, limit: pageLimit } = response.data.data;
+
+                // Map backend report structure to frontend issue structure
+                const mappedIssues = reports.map(report => ({
+                    id: report._id,
+                    title: report.description, // Backend uses description as the main text
+                    description: report.description,
+                    category: report.category,
+                    location: report.address || 'Unknown location',
+                    coordinates: report.location?.coordinates
+                        ? { latitude: report.location.coordinates[0], longitude: report.location.coordinates[1] }
+                        : null,
+                    upvotes: report.upvotes || 0,
+                    imageUrl: report.image?.url || null,
+                    createdAt: report.createdAt,
+                    status: report.status || 'open',
+                    user: report.user,
+                }));
+
+                return {
+                    issues: mappedIssues,
+                    total,
+                    page: currentPage,
+                    limit: pageLimit,
+                };
+            }
+
+            return { issues: [], total: 0, page: 1, limit: 10 };
         } catch (error) {
+            console.error('Get all issues error:', error);
             throw error;
         }
     },
 
     getIssueById: async (id) => {
         try {
-            // const response = await apiClient.get(`/issues/${id}`);
-            // return response.data;
-            return MOCK_ISSUES.find(issue => issue.id === id);
+            const response = await apiClient.get(`/api/v1/report/getReport/${id}`);
+
+            if (response.data && response.data.data && response.data.data.report) {
+                const report = response.data.data.report;
+
+                return {
+                    id: report._id,
+                    title: report.description,
+                    description: report.description,
+                    category: report.category,
+                    location: report.address || 'Unknown location',
+                    coordinates: report.location?.coordinates
+                        ? { latitude: report.location.coordinates[0], longitude: report.location.coordinates[1] }
+                        : null,
+                    upvotes: report.upvotes || 0,
+                    imageUrl: report.image?.url || null,
+                    createdAt: report.createdAt,
+                    status: report.status || 'open',
+                    user: report.user,
+                };
+            }
+
+            return null;
         } catch (error) {
+            console.error('Get issue by ID error:', error);
             throw error;
         }
     },
 
     createIssue: async (issueData) => {
         try {
-            // const response = await apiClient.post('/issues', issueData);
-            // return response.data;
-            console.log('Creating issue:', issueData);
+            const formData = new FormData();
 
-            const newIssue = {
-                id: String(MOCK_ISSUES.length + 1),
-                ...issueData,
-                imageUrl: issueData.image, // Map image to imageUrl
-                upvotes: 0,
-                createdAt: new Date().toISOString(),
-                status: 'open',
-            };
+            formData.append('description', issueData.description || issueData.title);
+            formData.append('department', issueData.department || 'General');
+            formData.append('category', issueData.category);
+            formData.append('latitude', issueData.coordinates?.latitude || issueData.latitude);
+            formData.append('longitude', issueData.coordinates?.longitude || issueData.longitude);
 
-            MOCK_ISSUES.unshift(newIssue);
+            // Handle image upload
+            if (issueData.image) {
+                const imageUri = issueData.image;
+                const filename = imageUri.split('/').pop();
+                const match = /\.(\w+)$/.exec(filename);
+                const type = match ? `image/${match[1]}` : 'image/jpeg';
 
-            return { success: true, message: 'Issue reported successfully!' };
+                formData.append('image', {
+                    uri: imageUri,
+                    name: filename,
+                    type,
+                });
+            }
+
+            const response = await apiClient.post('/api/v1/report/submitReport', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            if (response.data) {
+                return {
+                    success: true,
+                    message: response.data.message || 'Issue reported successfully!'
+                };
+            }
+
+            return { success: false, message: 'Failed to create issue' };
         } catch (error) {
-            throw error;
+            console.error('Create issue error:', error);
+            const errorMessage = error.response?.data?.message || error.message || 'Failed to create issue';
+            throw new Error(errorMessage);
         }
     },
 
     voteIssue: async (id) => {
         try {
-            // const response = await apiClient.post(`/issues/${id}/vote`);
-            // return response.data;
+            // Note: Backend doesn't have upvote endpoint yet, this is a placeholder
             console.log(`Voted for issue ${id}`);
             return { success: true, newVoteCount: 121 };
         } catch (error) {
+            console.error('Vote issue error:', error);
             throw error;
         }
     },
 
     getMapIssues: async () => {
         try {
-            // const response = await apiClient.get('/issues/map');
-            // return response.data;
-            return MOCK_ISSUES;
+            // Get all issues for map view
+            const result = await issueApi.getAllIssues({ limit: 100 });
+            return result.issues || [];
         } catch (error) {
+            console.error('Get map issues error:', error);
             throw error;
         }
     },
 
-    getMyIssues: async () => {
+    getMyIssues: async (username) => {
         try {
-            // In a real app, this would filter by the current user's ID
-            // const response = await apiClient.get('/issues/me');
-            // return response.data;
+            if (!username) {
+                throw new Error('Username is required');
+            }
 
-            // For mock data, we'll just return a subset or all issues
-            return new Promise((resolve) => {
-                setTimeout(() => resolve(MOCK_ISSUES), 500);
-            });
+            const response = await apiClient.get(`/api/v1/users/c/${username}`);
+
+            if (response.data && response.data.data && response.data.data.reports) {
+                const reports = response.data.data.reports;
+
+                // Map backend report structure to frontend issue structure
+                const mappedIssues = reports.map(report => ({
+                    id: report._id,
+                    title: report.description,
+                    description: report.description,
+                    category: report.category,
+                    location: report.address || 'Unknown location',
+                    coordinates: report.location?.coordinates
+                        ? { latitude: report.location.coordinates[0], longitude: report.location.coordinates[1] }
+                        : null,
+                    upvotes: report.upvotes || 0,
+                    imageUrl: report.image?.url || null,
+                    createdAt: report.createdAt,
+                    status: report.status || 'open',
+                }));
+
+                return mappedIssues;
+            }
+
+            return [];
         } catch (error) {
+            console.error('Get my issues error:', error);
             throw error;
         }
     }

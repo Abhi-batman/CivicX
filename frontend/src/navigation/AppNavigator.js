@@ -1,5 +1,6 @@
 // src/navigation/AppNavigator.js
 import React, { useContext } from "react";
+import { View, ActivityIndicator, StyleSheet } from "react-native";
 import { createStackNavigator } from "@react-navigation/stack";
 
 import { AuthContext } from "../context/AuthContext";
@@ -20,7 +21,11 @@ const AppNavigator = () => {
     const { user, loading } = useContext(AuthContext);
 
     if (loading) {
-        return null; // or splash screen
+        return (
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#a855f7" />
+            </View>
+        );
     }
 
     return (
@@ -47,5 +52,14 @@ const AppNavigator = () => {
         </Stack.Navigator>
     );
 };
+
+const styles = StyleSheet.create({
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#1a1a2e',
+    },
+});
 
 export default AppNavigator;

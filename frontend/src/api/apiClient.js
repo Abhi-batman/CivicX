@@ -1,8 +1,10 @@
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// In a real app, use react-native-dotenv or expo-constants to load this
-// For now, we'll use a placeholder or the one from .env if configured
-const API_BASE_URL = process.env.API_BASE_URL || 'https://api.example.com';
+// Backend API URL
+// For Android Emulator, use 10.0.2.2 instead of localhost
+// For physical device, use your computer's IP address (e.g., 192.168.1.100)
+const API_BASE_URL = process.env.API_BASE_URL || 'http://10.241.132.167:3000';
 
 const apiClient = axios.create({
     baseURL: API_BASE_URL,
@@ -15,10 +17,10 @@ const apiClient = axios.create({
 // Request interceptor to add auth token
 apiClient.interceptors.request.use(
     async (config) => {
-        // const token = await AsyncStorage.getItem('userToken');
-        // if (token) {
-        //   config.headers.Authorization = `Bearer ${token}`;
-        // }
+        const token = await AsyncStorage.getItem('accessToken');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
         return config;
     },
     (error) => {

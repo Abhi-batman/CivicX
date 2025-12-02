@@ -30,7 +30,7 @@ const registerUser = asyncHandler(async (req, res) => {
   // check if they are empty and throw error
   if (
     [fullName, username, email, password].some(
-      (fields) => fields.trim() === " "
+      (fields) => fields?.trim() === ""
     )
   ) {
     throw new ApiError(400, "All fields are required");
@@ -45,20 +45,20 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "User already exists");
   }
 
-  // get profile photo
-  const profilePhotoPath = req.files?.path;
+  // get profile photo (optional)
+  let uploadedProfilePhoto = null;
 
-  if (!profilePhotoPath) {
-    throw new ApiError(400, "Profile photo is required");
+  if (req.file?.path) {
+    const profilePhotoPath = req.file.path;
+    const profilePhoto = await uploadOnCloudinary(profilePhotoPath);
+
+    if (profilePhoto) {
+      uploadedProfilePhoto = {
+        url: profilePhoto.secure_url,
+        public_id: profilePhoto.public_id,
+      };
+    }
   }
-
-  // upload them on cloud
-  const profilePhoto = uploadOnCloudinary(profilePhotoPath);
-
-  const uploadedProfilePhoto = {
-    url: profilePhoto.secure_url,
-    public_id: profilePhoto.public_id,
-  };
 
   // create user
   const createdUser = await User.create({
@@ -69,9 +69,10 @@ const registerUser = asyncHandler(async (req, res) => {
     password,
     points: 0,
   });
+
   //check if user is created successfully or throw error
   if (!createdUser) {
-    throw (404, "Error creating profile");
+    throw new ApiError(404, "Error creating profile");
   }
 
   // return success response
@@ -90,20 +91,24 @@ const loginUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "username or email is required");
   }
 
+  // find user
+  const user = await User.findOne({
+    $or: [{ username }, { email }],
+  });
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
   const isPasswordValid = await user.isPasswordCorrect(password);
 
   if (!isPasswordValid) {
     throw new ApiError(401, "Invalid Password");
   }
 
-  // find user
-  const user = await User.findOne({
-    $or: [{ username }, { email }],
-  });
-
   // generate access and refresh token
   const { accessToken, refreshToken } =
-    await generateAccessTokenAndRefreshToken(user._id);
+    await generateAccessAndRefreshToken(user._id);
 
   // match them
   // create

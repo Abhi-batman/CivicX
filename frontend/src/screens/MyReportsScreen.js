@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useContext } from 'react';
 import { View, Text, FlatList, StyleSheet, RefreshControl, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import IssueCard from '../components/IssueCard';
 import issueApi from '../api/issueApi';
+import { AuthContext } from '../context/AuthContext';
 import { COLORS, SPACING, RADIUS } from '../constants/theme';
 
 import DescriptionModal from '../components/DescriptionModal';
@@ -12,6 +13,7 @@ import CommentModal from '../components/CommentModal';
 
 const MyReportsScreen = ({ navigation }) => {
     const insets = useSafeAreaInsets();
+    const { user } = useContext(AuthContext);
     const [issues, setIssues] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -21,17 +23,19 @@ const MyReportsScreen = ({ navigation }) => {
 
     const fetchMyIssues = useCallback(async () => {
         try {
-            const data = await issueApi.getMyIssues();
-            // Sort by date descending
-            const sortedData = data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-            setIssues(sortedData);
+            if (user?.username) {
+                const data = await issueApi.getMyIssues(user.username);
+                // Sort by date descending
+                const sortedData = data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                setIssues(sortedData);
+            }
         } catch (error) {
             console.error('Error fetching my issues:', error);
         } finally {
             setLoading(false);
             setRefreshing(false);
         }
-    }, []);
+    }, [user]);
 
     useEffect(() => {
         fetchMyIssues();

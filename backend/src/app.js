@@ -33,6 +33,7 @@ import csrRouter from "./routers/csr.router.js";
 
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/report", reportRouter);
+<<<<<<< HEAD
 app.use("/api/v1/authority", authorityRouter);
 app.use("/api/v1/csr", csrRouter);
 
@@ -43,5 +44,9 @@ app.get("/", (req, res) => {
 
 
 
+=======
+app.use("/api/v1/authority", authorityRouter)
+app.use("/api/v1/csr", csrRouter)
+>>>>>>> 9b26ce75d979f69539db4ef886a95c74453b04bf
 
 export { app };
